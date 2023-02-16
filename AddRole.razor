@@ -1,0 +1,47 @@
+﻿@*@page "/add-role/{ROLENAME}"*@
+@page "/add-role"
+
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject RoleManager<IdentityRole> roleManager
+
+<input type="text" @bind="inputRolename" />
+<button @onclick="AddCustomerRole">Add Role: @ROLENAME</button>
+<h3>@Msg</h3>
+@if (result!=null && result.Errors != null)
+{
+    foreach ( var x in result.Errors)
+    {
+        <h3>[@x.Code] @x.Description</h3>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public string ROLENAME { get; set; }
+    public string Msg { get; set; }
+
+    public string inputRolename { get; set; }
+
+    public IdentityResult result;
+
+    async Task AddCustomerRole()
+    {
+        var role = new IdentityRole(inputRolename);
+
+         result = await roleManager.CreateAsync(role);
+
+        if (result.Succeeded)
+        {
+            // Role added successfully
+            Msg = "done!";
+        }
+        else
+        {
+           // Msg = " Role not added, check the result.Errors property for details " + result.Errors.ToString();
+            Msg = " Role not added" ;
+
+        }
+    }
+}

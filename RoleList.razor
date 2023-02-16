@@ -1,0 +1,84 @@
+﻿@page "/roles"
+@page "/role-list"
+
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject RoleManager<IdentityRole> roleManager
+
+<h1>Roles</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Role Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (roles != null)
+        {
+
+            foreach (var role in roles.OrderBy(a=>a.Name))
+            {
+                <tr>
+                    <td>[@role.Name] @role.NormalizedName</td>
+                    <td>
+                        @*<button @onclick="() => EditRole(role)">Edit</button>*@
+                        <button @onclick="() => DeleteRole(role)">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (showEditForm)
+{
+    <h2>Edit Role: @roleName</h2>
+    <form @onsubmit="UpdateRole">
+        <label>
+            Role Name:
+            <input type="text" @bind="@roleName" />
+        </label>
+        <button type="submit">Save</button>
+    </form>
+}
+
+@code {
+    private List<IdentityRole> roles;
+    private bool showEditForm;
+    private string roleName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await roleManager.Roles.ToListAsync();
+    }
+
+    private void EditRole(IdentityRole role)
+    {
+        roleName = role.Name;
+        showEditForm = true;
+    }
+
+    private async Task UpdateRole()
+    {
+        var role = await roleManager.FindByNameAsync("Admin");
+        role.Name = roleName;
+
+        var result = await roleManager.UpdateAsync(role);
+        if (result.Succeeded)
+        {
+            roles = await roleManager.Roles.ToListAsync();
+            showEditForm = false;
+        }
+    }
+
+    private async Task DeleteRole(IdentityRole role)
+    {
+        var result = await roleManager.DeleteAsync(role);
+        if (result.Succeeded)
+        {
+            roles = await roleManager.Roles.ToListAsync();
+        }
+    }
+}
